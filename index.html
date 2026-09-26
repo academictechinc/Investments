@@ -1,0 +1,924 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#12141a">
+<title>Portfolio</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#12141a;--panel:#181b23;--panel2:#1e222c;--line:#2a2f3b;--grid:rgba(79,216,196,.045);
+  --ink:#e7e9ef;--dim:#8b92a3;--faint:#5c6273;
+  --teal:#4fd8c4;--amber:#f2a93b;--red:#ff7a70;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  --sans:'Space Grotesk',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{margin:0;height:100%}
+body{
+  background-color:var(--bg);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;background-attachment:fixed;
+  color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45;
+  -webkit-tap-highlight-color:transparent;
+}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.num,.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.up{color:var(--teal)}.down{color:var(--red)}.warn{color:var(--amber)}.dim{color:var(--dim)}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;align-items:center;gap:10px;
+  padding:12px 16px;background:rgba(18,20,26,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;letter-spacing:.01em}
+.brand svg{width:22px;height:22px}
+.status{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--dim);text-align:right}
+.status .spin{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--amber);margin-right:6px;animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.status .spin{animation:none}}
+
+main{max-width:760px;margin:0 auto;padding:16px 16px 110px}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;background:rgba(18,20,26,.96);border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom,0px);backdrop-filter:blur(8px)}
+.tabs button{flex:1;background:none;border:0;padding:9px 2px 10px;color:var(--dim);font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px}
+.tabs button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7}
+.tabs button[aria-current="page"]{color:var(--teal)}
+
+/* hero */
+.hero{padding:10px 2px 18px}
+.hero .lbl{color:var(--dim);font-size:13px}
+.hero .big{font-size:clamp(38px,11vw,56px);font-weight:600;letter-spacing:-.02em;line-height:1.05;margin:2px 0 8px;font-variant-numeric:tabular-nums}
+.hero .big .cents{font-size:.45em;color:var(--dim);font-weight:500;margin-left:2px}
+.hero .lines{display:flex;flex-wrap:wrap;gap:4px 18px;font-family:var(--mono);font-size:13px}
+.hero .lines span b{font-weight:500}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
+.card h2{font-size:15px;font-weight:600;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+.card h2 .r{margin-left:auto;font-weight:400}
+.flags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.flag{background:rgba(242,169,59,.1);border:1px solid rgba(242,169,59,.35);color:var(--amber);border-radius:999px;padding:5px 11px;font-size:13px}
+button.flag{cursor:pointer}
+
+/* chart */
+.chart{--c:var(--teal)}
+.chart.neg{--c:var(--red)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{background:none;border:0;padding:5px 10px;font-family:var(--mono);font-size:12px;color:var(--dim)}
+.seg button[aria-pressed="true"]{background:var(--panel2);color:var(--teal)}
+.chart-ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.chart-ctl select{margin-left:auto}
+.chart-read{font-family:var(--mono);font-size:13px;min-height:20px;margin-bottom:6px}
+.plot{position:relative;height:170px;touch-action:pan-y}
+.plot svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.plot .cursor{position:absolute;top:0;bottom:0;width:1px;background:var(--dim);opacity:0;pointer-events:none}
+.plot .dot{position:absolute;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:var(--c);box-shadow:0 0 0 3px var(--bg);opacity:0;pointer-events:none}
+.plot .ylab{position:absolute;right:0;font-family:var(--mono);font-size:11px;color:var(--faint);background:rgba(24,27,35,.7);padding:0 3px}
+.plot .ylab.top{top:0}.plot .ylab.bot{bottom:0}
+.xlab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:6px}
+.chart-empty{border:1px dashed var(--line);border-radius:10px;padding:26px 16px;color:var(--dim);font-size:14px;text-align:center}
+
+/* lists */
+.row{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:11px 2px;border-top:1px solid var(--line);align-items:center}
+.row:first-child{border-top:0}
+.row .t{font-weight:600;display:flex;align-items:center;gap:6px;min-width:0}
+.row .t .nm{font-weight:400;color:var(--dim);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .v{text-align:right;font-family:var(--mono);font-size:14px}
+.row .s{font-size:12px;color:var(--dim);font-family:var(--mono)}
+.row .s2{text-align:right;font-size:12px;font-family:var(--mono)}
+button.row{width:100%;background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;color:inherit}
+.bar{grid-column:1/-1;height:4px;border-radius:2px;background:var(--panel2);overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--teal)}
+.bar.amber i{background:var(--amber)}
+.badge{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;border:1px solid var(--line);color:var(--dim);font-weight:400}
+.badge.amber{border-color:rgba(242,169,59,.45);color:var(--amber)}
+.badge.teal{border-color:rgba(79,216,196,.4);color:var(--teal)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--panel2);border-radius:999px;padding:3px 10px;font-size:12.5px;color:var(--dim)}
+.chip[aria-pressed="true"]{border-color:var(--teal);color:var(--teal);background:rgba(79,216,196,.08)}
+.detail{grid-column:1/-1;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:8px}
+.detail .sub{display:grid;grid-template-columns:1fr auto;gap:0 10px;padding:8px 0;border-top:1px solid var(--line);font-size:13px}
+.detail .sub:first-child{border-top:0}
+.detail .sub .s{grid-column:1/-1}
+.detail .tagrow{border-top:1px solid var(--line);padding-top:10px;margin-top:4px}
+.detail .tagrow .lbl{font-size:12px;color:var(--dim);margin-bottom:6px}
+.addtag{display:flex;gap:6px;margin-top:8px}
+.addtag input{flex:1;min-width:0}
+
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.toolbar input[type=search]{flex:1;min-width:140px}
+input[type=text],input[type=number],input[type=date],input[type=search],input[type=password],select{
+  background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-height:38px}
+select{padding-right:6px}
+.btn{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 14px;min-height:38px;display:inline-flex;align-items:center;gap:6px}
+.btn.primary{background:var(--teal);border-color:var(--teal);color:#0d1a18;font-weight:600}
+.btn.amber{border-color:rgba(242,169,59,.5);color:var(--amber)}
+.btn.danger{border-color:rgba(255,122,112,.5);color:var(--red)}
+.btn.sm{padding:4px 10px;min-height:30px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:default}
+.note{font-size:13px;color:var(--dim);margin:6px 0 0}
+.acct-head{display:flex;align-items:baseline;gap:8px}
+.acct-head .v{margin-left:auto;font-family:var(--mono)}
+.acct-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.empty{text-align:center;padding:34px 14px;color:var(--dim)}
+.empty h3{color:var(--ink);font-size:17px;margin:0 0 6px}
+.empty .btn{margin-top:12px}
+
+/* dialog */
+dialog{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:0;width:min(560px,94vw);max-height:88vh}
+dialog::backdrop{background:rgba(5,6,9,.7)}
+.dlg{padding:16px;overflow:auto;max-height:88vh}
+.dlg h3{margin:0 0 12px;font-size:17px}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.field label,.field .lbl{font-size:13px;color:var(--dim)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.dlg-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:6px;position:sticky;bottom:-16px;background:var(--panel);padding:10px 0 2px}
+.dlg-actions .left{margin-right:auto}
+.map{display:grid;grid-template-columns:auto 1fr;gap:8px 10px;align-items:center;margin-bottom:12px}
+.map label{font-size:13px;color:var(--dim)}
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;margin:8px 0 10px}
+table{border-collapse:collapse;width:100%;font-family:var(--mono);font-size:12px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--dim);font-weight:500}
+.check{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--dim);margin-bottom:10px}
+.hist{max-height:180px;overflow:auto;border:1px solid var(--line);border-radius:8px;margin-bottom:12px}
+.hist div{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:13px}
+.hist div:last-child{border-bottom:0}
+.hist button{background:none;border:0;color:var(--red);font-size:12px}
+
+#toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line);
+  padding:10px 14px;border-radius:10px;font-size:14px;max-width:90vw;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
+#toast.on{opacity:1}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#4fd8c4" stroke-width="1.8" aria-hidden="true"><path d="M3 20h18"/><path d="M5 16l4-5 4 3 6-8"/><circle cx="19" cy="6" r="1.6" fill="#f2a93b" stroke="none"/></svg>
+    Portfolio
+  </div>
+  <div class="status" id="status"></div>
+</header>
+<main id="view"></main>
+<nav class="tabs" id="tabs">
+  <button data-act="tab" data-tab="overview"><svg viewBox="0 0 24 24"><path d="M4 19V11M10 19V5M16 19v-6M22 19H2"/></svg>Overview</button>
+  <button data-act="tab" data-tab="holdings"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Holdings</button>
+  <button data-act="tab" data-tab="categories"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4v8l6 5"/></svg>Categories</button>
+  <button data-act="tab" data-tab="accounts"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>Accounts</button>
+  <button data-act="tab" data-tab="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>Settings</button>
+</nav>
+<dialog id="dlg"><div class="dlg" id="dlgBody"></div></dialog>
+<div id="toast" role="status"></div>
+<input type="file" id="csvFile" accept=".csv,text/csv,text/plain" hidden>
+<input type="file" id="restoreFile" accept=".json,application/json" hidden>
+
+<script>
+'use strict';
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-3);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const ymd = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const today = () => ymd(new Date());
+const money = (n, dec = 0) => (n == null || !isFinite(n)) ? '—' :
+  n.toLocaleString('en-US', {style: 'currency', currency: 'USD', minimumFractionDigits: dec, maximumFractionDigits: dec});
+const money2 = n => money(n, 2);
+const signed = (n, dec = 0) => (n == null || !isFinite(n)) ? '—' : (n >= 0 ? '+' : '−') + money(Math.abs(n), dec);
+const pct = n => (n == null || !isFinite(n)) ? '—' : (n >= 0 ? '+' : '−') + Math.abs(n).toFixed(2) + '%';
+const share = n => (n == null || !isFinite(n)) ? '—' : n.toFixed(1) + '%';
+const cls = n => n > 0 ? 'up' : n < 0 ? 'down' : '';
+const qtyFmt = n => n == null ? '—' : (+n).toLocaleString('en-US', {maximumFractionDigits: 4});
+const fdate = (d, yr) => new Date(d + 'T12:00:00').toLocaleDateString('en-US', yr ? {month: 'short', day: 'numeric', year: 'numeric'} : {month: 'short', day: 'numeric'});
+function ago(ts) {
+  if (!ts) return 'never';
+  const m = Math.round((Date.now() - ts) / 60000);
+  if (m < 1) return 'just now';
+  if (m < 60) return m + ' min ago';
+  const h = Math.round(m / 60);
+  if (h < 36) return h + ' hr ago';
+  return Math.round(h / 24) + ' days ago';
+}
+function daysSince(d) { return Math.floor((Date.now() - new Date(d + 'T12:00:00')) / 86400000); }
+let toastT;
+function toast(msg, ms = 3200) { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), ms); }
+
+/* ---------- storage (IndexedDB) ---------- */
+const idb = {
+  db: null,
+  open() { return new Promise((res, rej) => { const r = indexedDB.open('portfolio', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('kv');
+    r.onsuccess = () => { this.db = r.result; res(); }; r.onerror = () => rej(r.error); }); },
+  get(k) { return new Promise((res, rej) => { if (!this.db) return res(undefined);
+    const q = this.db.transaction('kv').objectStore('kv').get(k); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); }); },
+  set(k, v) { return new Promise((res, rej) => { if (!this.db) return res();
+    const t = this.db.transaction('kv', 'readwrite'); t.objectStore('kv').put(v, k); t.oncomplete = () => res(); t.onerror = () => rej(t.error); }); }
+};
+
+/* ---------- state ---------- */
+const DEFAULT_STATE = () => ({
+  v: 1,
+  accounts: [
+    {id: uid(), name: 'Robinhood', type: 'brokerage', tags: []},
+    {id: uid(), name: 'Charles Schwab', type: 'brokerage', tags: []},
+    {id: uid(), name: 'Fidelity', type: 'brokerage', tags: []},
+    {id: uid(), name: 'MACS 529', type: 'manual', tags: ['College']},
+    {id: uid(), name: 'New York Life SIMPLE IRA', type: 'manual', tags: ['Retirement']}
+  ],
+  holdings: [],     // {id, accountId, symbol, name, qty, cost(total), csvPrice, csvValue, manualPrice}
+  tags: {},         // SYMBOL -> [tag, ...]
+  balances: {},     // accountId -> [{d, v}]
+  settings: {key: '', maxAge: 15},
+  pricesAt: 0
+});
+let S = DEFAULT_STATE(), P = {}, SNAP = [];
+const U = {tab: 'overview', range: '3M', series: 'total', hview: 'combined', sort: 'value', q: '', open: {}, tag: null, needPrice: false};
+
+async function save() { try { await idb.set('state', S); } catch (e) { toast('Save failed: ' + e.message); } }
+
+// Money market / cash tickers priced at $1
+const CASHY = /^(CASH|CORE|SPAXX|FDRXX|FZFXX|SPRXX|FCASH|SWVXX|SNVXX|SNSXX|SNOXX|SWGXX|VMFXX|VMRXX|QACDS)$/;
+
+/* ---------- pricing & math ---------- */
+function priceOf(h) {
+  if (h.manualPrice > 0) return {p: h.manualPrice, src: 'manual'};
+  if (CASHY.test(h.symbol)) return {p: 1, src: 'cash'};
+  const q = P[h.symbol];
+  if (q && q.c > 0) return {p: q.c, src: 'live', q};
+  if (h.csvPrice > 0) return {p: h.csvPrice, src: 'import'};
+  if (h.csvValue > 0 && h.qty > 0) return {p: h.csvValue / h.qty, src: 'import'};
+  return {p: null, src: 'none'};
+}
+function latestBal(aid) { const b = S.balances[aid] || []; return b.length ? b[b.length - 1] : null; }
+function prevBal(aid) { const b = S.balances[aid] || []; return b.length > 1 ? b[b.length - 2] : null; }
+function tagsFor(sym) { const t = S.tags[sym]; return t && t.length ? t : []; }
+
+function calc() {
+  const rows = S.holdings.map(h => {
+    const pi = priceOf(h);
+    const value = pi.p != null ? h.qty * pi.p : null;
+    const day = (pi.src === 'live' && pi.q.pc > 0) ? h.qty * (pi.q.c - pi.q.pc) : 0;
+    const gain = (value != null && h.cost > 0) ? value - h.cost : null;
+    return {...h, price: pi.p, src: pi.src, value, day, gain};
+  });
+  const acc = {};
+  const blank = () => ({value: 0, day: 0, gain: 0, gcost: 0, n: 0, missing: 0, dayBase: 0});
+  S.accounts.forEach(a => acc[a.id] = blank());
+  rows.forEach(r => {
+    const a = acc[r.accountId]; if (!a) return;
+    a.n++; a.value += r.value || 0; a.day += r.day;
+    if (r.src === 'live') a.dayBase += r.value - r.day;
+    if (r.gain != null) { a.gain += r.gain; a.gcost += r.cost; }
+    if (r.value == null) a.missing++;
+  });
+  S.accounts.forEach(a => {
+    if (a.type === 'manual') {
+      const L = latestBal(a.id), pv = prevBal(a.id);
+      acc[a.id] = {...blank(), value: L ? L.v : 0, since: pv ? L.v - pv.v : null, asOf: L ? L.d : null};
+    }
+  });
+  const tot = blank();
+  for (const id in acc) { const a = acc[id]; tot.value += a.value; tot.day += a.day; tot.gain += a.gain; tot.gcost += a.gcost; tot.dayBase += a.dayBase; tot.missing += a.missing; }
+
+  const tags = {};
+  const T = name => tags[name] || (tags[name] = {value: 0, gain: 0, gcost: 0, day: 0, dayBase: 0, syms: new Set(), accts: new Set()});
+  rows.forEach(r => {
+    const a = S.accounts.find(x => x.id === r.accountId);
+    if (!a || a.type === 'manual') return;
+    const list = tagsFor(r.symbol);
+    (list.length ? list : ['Untagged']).forEach(t => {
+      const o = T(t); o.value += r.value || 0; o.day += r.day; o.syms.add(r.symbol);
+      if (r.src === 'live') o.dayBase += r.value - r.day;
+      if (r.gain != null) { o.gain += r.gain; o.gcost += r.cost; }
+    });
+  });
+  S.accounts.filter(a => a.type === 'manual').forEach(a => {
+    const list = a.tags && a.tags.length ? a.tags : ['Untagged'];
+    list.forEach(t => { const o = T(t); o.value += acc[a.id].value; o.accts.add(a.name); });
+  });
+  return {rows, acc, tot, tags};
+}
+
+function consolidate(rows) {
+  const g = {};
+  rows.forEach(r => {
+    const o = g[r.symbol] || (g[r.symbol] = {symbol: r.symbol, name: r.name, qty: 0, value: 0, cost: 0, gain: 0, hasGain: false, day: 0, dayBase: 0, rows: [], missing: false, srcs: new Set()});
+    o.qty += r.qty; o.value += r.value || 0; o.day += r.day; o.rows.push(r); o.srcs.add(r.src);
+    if (!o.name && r.name) o.name = r.name;
+    if (r.src === 'live') o.dayBase += r.value - r.day;
+    if (r.gain != null) { o.gain += r.gain; o.cost += r.cost; o.hasGain = true; }
+    if (r.value == null) o.missing = true;
+  });
+  return Object.values(g);
+}
+
+/* ---------- live quotes (Finnhub) ---------- */
+let refreshing = false, refreshMsg = '';
+async function refresh(force) {
+  if (refreshing) return;
+  const key = (S.settings.key || '').trim();
+  if (!key) { if (force) toast('Add a free Finnhub key in Settings to pull live prices.'); return; }
+  const syms = [...new Set(S.holdings.filter(h => !(h.manualPrice > 0) && !CASHY.test(h.symbol)).map(h => h.symbol))];
+  if (!syms.length) { if (force) toast('No tickers to price yet. Import a CSV first.'); return; }
+  refreshing = true; const miss = []; let bad = false;
+  for (let i = 0; i < syms.length; i++) {
+    refreshMsg = `Pricing ${i + 1} of ${syms.length}`; renderStatus();
+    const s = syms[i];
+    const url = `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(s)}&token=${encodeURIComponent(key)}`;
+    try {
+      let r = await fetch(url);
+      if (r.status === 429) { refreshMsg = 'Rate limited, waiting…'; renderStatus(); await sleep(20000); r = await fetch(url); }
+      if (r.status === 401 || r.status === 403) { bad = true; break; }
+      const j = await r.json();
+      if (j && j.c > 0) P[s] = {c: j.c, pc: j.pc, t: Date.now()}; else miss.push(s);
+    } catch (e) { miss.push(s); }
+    await sleep(syms.length > 55 ? 1100 : 120);
+  }
+  refreshing = false; refreshMsg = '';
+  if (bad) { toast('Finnhub rejected the key. Check it in Settings.', 4500); renderStatus(); return; }
+  S.pricesAt = Date.now();
+  await idb.set('prices', P); await save(); await snap();
+  render();
+  if (miss.length) toast(`No live quote for ${miss.join(', ')}. Using the import price; set a manual price if it drifts.`, 5500);
+}
+
+/* ---------- daily snapshots ---------- */
+async function snap() {
+  const c = calc();
+  if (!(c.tot.value > 0)) return;
+  const s = {d: today(), total: c.tot.value, acc: {}, tags: {}};
+  for (const id in c.acc) s.acc[id] = c.acc[id].value;
+  for (const t in c.tags) s.tags[t] = c.tags[t].value;
+  const i = SNAP.findIndex(x => x.d === s.d);
+  if (i >= 0) SNAP[i] = s; else { SNAP.push(s); SNAP.sort((a, b) => a.d < b.d ? -1 : 1); }
+  try { await idb.set('snaps', SNAP); } catch (e) {}
+}
+
+/* ---------- CSV import ---------- */
+function parseCSV(text) {
+  const rows = []; let row = [], f = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '"') { if (text[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; }
+    else if (c === '"') q = true;
+    else if (c === ',') { row.push(f); f = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(f); rows.push(row); row = []; f = ''; }
+    else f += c;
+  }
+  if (f !== '' || row.length) { row.push(f); rows.push(row); }
+  return rows.map(r => r.map(x => x.trim())).filter(r => r.some(x => x));
+}
+function num(v) {
+  if (v == null) return null;
+  let s = String(v).trim();
+  if (!s || s === '--' || /^n\/?a$/i.test(s)) return null;
+  const neg = /^\(.*\)$/.test(s) || /^-/.test(s.replace(/[$\s]/g, ''));
+  s = s.replace(/[^0-9.]/g, '');
+  if (!s) return null;
+  const n = parseFloat(s);
+  return isNaN(n) ? null : (neg ? -n : n);
+}
+const FIELDS = [['symbol', 'Symbol'], ['name', 'Name'], ['qty', 'Quantity'], ['price', 'Price'], ['value', 'Market value'], ['cost', 'Cost basis'], ['account', 'Account'], ['tags', 'Tags / sector']];
+function guessMap(headers) {
+  const H = headers.map(h => h.toLowerCase());
+  const find = t => H.findIndex(t);
+  const m = {};
+  m.symbol = find(h => /^(symbol|ticker)\b/.test(h)); if (m.symbol < 0) m.symbol = find(h => /symbol|ticker/.test(h));
+  m.name = find(h => /description|security name|^name$|investment name|^security$|^fund/.test(h));
+  m.qty = find(h => /qty|quantity|shares|units/.test(h) && !/price|value|cost|%/.test(h));
+  m.price = find(h => /price/.test(h) && !/change|chng|chg|%|cost|avg|average/.test(h));
+  m.value = find(h => /val/.test(h) && !/change|chng|chg|cost|%|gain|day/.test(h));
+  let perShare = false;
+  m.cost = find(h => /cost/.test(h) && /total|basis/.test(h) && !/avg|average|per|unit|%/.test(h));
+  if (m.cost < 0) { m.cost = find(h => /cost/.test(h) && !/%|gain/.test(h)); perShare = m.cost >= 0 && /avg|average|per|unit/.test(H[m.cost]); }
+  m.account = find(h => /^account name$|^account$|^acct$|^brokerage$|^institution$/.test(h));
+  if (m.account < 0) m.account = find(h => /^account/.test(h) && !/number|type|#|no\.?$/.test(h));
+  m.tags = find(h => /sector|category|tags?$|bucket|group|theme/.test(h));
+  return {m, perShare};
+}
+function splitTags(s) { return String(s || '').split(/[,;|]/).map(x => x.trim()).filter(Boolean); }
+function buildRows(imp) {
+  const {grid, hi, m, perShare} = imp; const out = [];
+  for (const r of grid.slice(hi + 1)) {
+    const g = i => i >= 0 ? (r[i] || '') : '';
+    let sym = g(m.symbol).toUpperCase().trim();
+    const name = g(m.name);
+    let qty = num(g(m.qty)), price = num(g(m.price)), value = num(g(m.value)), cost = num(g(m.cost));
+    if (!sym && !name) continue;
+    const text = sym + ' ' + name;
+    if (/cash|money market|sweep/i.test(text) && (!sym || /\s/.test(sym))) {
+      if (!(value > 0)) continue;
+      out.push({symbol: 'CASH', name: 'Cash', qty: value, price: 1, value, cost: value, account: g(m.account), tags: g(m.tags)});
+      continue;
+    }
+    sym = sym.replace(/\*+$/, '').replace(/\//g, '.').replace(/\s+/g, '');
+    if (!/^[A-Z0-9.\-]{1,12}$/.test(sym) || /^(TOTAL|ACCOUNT|PENDING)/.test(sym)) continue;
+    if (qty == null) {
+      if (value != null && price) qty = value / price;
+      else if (CASHY.test(sym) && value != null) qty = value;
+      else continue;
+    }
+    if (cost != null && perShare) cost = cost * qty;
+    out.push({symbol: sym, name, qty, price, value, cost, account: g(m.account), tags: g(m.tags)});
+  }
+  return out;
+}
+function matchAccount(nm) {
+  const n = nm.toLowerCase().trim();
+  let a = S.accounts.find(x => x.name.toLowerCase() === n);
+  if (a) return a;
+  a = S.accounts.find(x => { const xn = x.name.toLowerCase(); return n.includes(xn) || xn.includes(n); });
+  if (a) return a;
+  const keys = ['robinhood', 'schwab', 'fidelity', 'macs', '529', 'new york life', 'nyl'];
+  const k = keys.find(k => n.includes(k));
+  return k ? S.accounts.find(x => x.name.toLowerCase().includes(k === 'nyl' ? 'new york life' : k)) : null;
+}
+let IMP = null;
+function startImport(accId) { IMP = {pendingTarget: accId || null}; const f = $('#csvFile'); f.value = ''; f.click(); }
+$('#csvFile').addEventListener('change', async e => {
+  const file = e.target.files[0]; if (!file) return;
+  const text = (await file.text()).replace(/^\uFEFF/, '');
+  const grid = parseCSV(text);
+  if (!grid.length) { toast('That file looks empty.'); return; }
+  let hi = grid.findIndex((r, i) => i < 40 && r.some(c => /^(symbol|ticker)/i.test(c)));
+  if (hi < 0) hi = 0;
+  const headers = grid[hi];
+  const g = guessMap(headers);
+  let target = IMP && IMP.pendingTarget;
+  if (!target) target = g.m.account >= 0 ? '__col' : (S.accounts.find(a => a.type === 'brokerage') || S.accounts[0]).id;
+  IMP = {grid, hi, headers, m: g.m, perShare: g.perShare, target, fname: file.name};
+  renderImport(); openDlg();
+});
+function renderImport() {
+  const rows = buildRows(IMP);
+  const opts = sel => `<option value="-1">— none —</option>` + IMP.headers.map((h, i) => `<option value="${i}" ${i === sel ? 'selected' : ''}>${esc(h || 'Column ' + (i + 1))}</option>`).join('');
+  const targets = (IMP.m.account >= 0 ? `<option value="__col" ${IMP.target === '__col' ? 'selected' : ''}>Use the Account column in the file</option>` : '') +
+    S.accounts.map(a => `<option value="${a.id}" ${IMP.target === a.id ? 'selected' : ''}>${esc(a.name)}${a.type === 'manual' ? ' (switches to holdings)' : ''}</option>`).join('');
+  let dest = '';
+  if (IMP.target === '__col') {
+    const names = [...new Set(rows.map(r => r.account.trim() || 'Imported'))];
+    dest = names.map(n => { const a = matchAccount(n); return `<div>${esc(n)} → ${a ? esc(a.name) : '<span class="warn">new account</span>'}</div>`; }).join('');
+    dest = `<div class="note" style="margin:-4px 0 12px">${dest}</div>`;
+  }
+  const prev = rows.slice(0, 8).map(r => `<tr><td>${esc(r.symbol)}</td><td>${qtyFmt(r.qty)}</td><td>${r.price != null ? money2(r.price) : '—'}</td><td>${r.value != null ? money(r.value) : '—'}</td><td>${r.cost != null ? money(r.cost) : '—'}</td>${IMP.target === '__col' ? `<td>${esc(r.account)}</td>` : ''}${IMP.m.tags >= 0 ? `<td>${esc(r.tags)}</td>` : ''}</tr>`).join('');
+  $('#dlgBody').innerHTML = `
+    <h3>Import ${esc(IMP.fname)}</h3>
+    <div class="field"><label for="impTarget">Put these holdings in</label><select id="impTarget" data-chg="impTarget">${targets}</select></div>
+    ${dest}
+    <div class="lbl dim" style="font-size:13px;margin-bottom:8px">Columns — adjust anything that guessed wrong</div>
+    <div class="map">${FIELDS.map(([k, l]) => `<label for="map_${k}">${l}</label><select id="map_${k}" data-chg="impMap" data-k="${k}">${opts(IMP.m[k])}</select>`).join('')}</div>
+    <label class="check"><input type="checkbox" data-chg="impPer" ${IMP.perShare ? 'checked' : ''}> Cost basis column is per share (average cost)</label>
+    <div class="tblwrap"><table><thead><tr><th>Symbol</th><th>Qty</th><th>Price</th><th>Value</th><th>Cost</th>${IMP.target === '__col' ? '<th>Account</th>' : ''}${IMP.m.tags >= 0 ? '<th>Tags</th>' : ''}</tr></thead><tbody>${prev || '<tr><td colspan="7" style="text-align:left">No holdings found. Check the Symbol and Quantity columns.</td></tr>'}</tbody></table></div>
+    <p class="note">${rows.length} holding${rows.length === 1 ? '' : 's'} found. Importing replaces what's currently in ${IMP.target === '__col' ? 'each matched account' : 'that account'}; your tags and manual prices are kept.</p>
+    <div class="dlg-actions"><button class="btn" data-act="closeDlg">Cancel</button><button class="btn primary" data-act="doImport" ${rows.length ? '' : 'disabled'}>Import ${rows.length} holding${rows.length === 1 ? '' : 's'}</button></div>`;
+}
+async function doImport() {
+  const rows = buildRows(IMP); const by = {};
+  for (const r of rows) {
+    let aid = IMP.target;
+    if (aid === '__col') {
+      const nm = r.account.trim() || 'Imported';
+      let a = matchAccount(nm);
+      if (!a) { a = {id: uid(), name: nm, type: 'brokerage', tags: []}; S.accounts.push(a); }
+      aid = a.id;
+    }
+    (by[aid] = by[aid] || []).push(r);
+  }
+  let n = 0;
+  for (const aid in by) {
+    const old = S.holdings.filter(h => h.accountId === aid);
+    S.holdings = S.holdings.filter(h => h.accountId !== aid);
+    const agg = {};
+    for (const r of by[aid]) {
+      const o = agg[r.symbol] || (agg[r.symbol] = {symbol: r.symbol, name: r.name, qty: 0, cost: null, csvPrice: null, csvValue: 0});
+      o.qty += r.qty; if (r.cost != null) o.cost = (o.cost || 0) + r.cost;
+      if (r.value != null) o.csvValue += r.value;
+      if (r.price) o.csvPrice = r.price;
+      if (!o.name) o.name = r.name;
+      const t = splitTags(r.tags);
+      if (t.length) S.tags[r.symbol] = [...new Set([...(S.tags[r.symbol] || []), ...t])];
+    }
+    for (const k in agg) { const prev = old.find(h => h.symbol === k); S.holdings.push({id: uid(), accountId: aid, ...agg[k], manualPrice: prev ? prev.manualPrice || null : null}); n++; }
+    const a = S.accounts.find(x => x.id === aid); a.type = 'brokerage'; a.importedAt = Date.now();
+  }
+  await save(); await snap(); closeDlg();
+  toast(`Imported ${n} holdings.`);
+  render();
+  refresh(false);
+}
+
+/* ---------- dialogs ---------- */
+const dlg = $('#dlg');
+function openDlg() { if (!dlg.open) dlg.showModal(); }
+function closeDlg() { if (dlg.open) dlg.close(); }
+dlg.addEventListener('click', e => { if (e.target === dlg) closeDlg(); });
+
+function holdingDlg(id, accId) {
+  const h = id ? S.holdings.find(x => x.id === id) : null;
+  const brok = S.accounts.filter(a => a.type === 'brokerage');
+  const acc = h ? h.accountId : (accId || (brok[0] || S.accounts[0]).id);
+  $('#dlgBody').innerHTML = `
+    <h3>${h ? 'Edit ' + esc(h.symbol) : 'Add holding'}</h3>
+    <div class="field"><label for="hAcc">Account</label><select id="hAcc">${S.accounts.map(a => `<option value="${a.id}" ${a.id === acc ? 'selected' : ''}>${esc(a.name)}</option>`).join('')}</select></div>
+    <div class="grid2">
+      <div class="field"><label for="hSym">Symbol</label><input id="hSym" type="text" autocapitalize="characters" value="${esc(h ? h.symbol : '')}" ${h ? 'readonly' : ''}></div>
+      <div class="field"><label for="hQty">Shares</label><input id="hQty" type="number" step="any" inputmode="decimal" value="${h ? h.qty : ''}"></div>
+      <div class="field"><label for="hCost">Total cost basis</label><input id="hCost" type="number" step="any" inputmode="decimal" value="${h && h.cost != null ? +h.cost.toFixed(2) : ''}"></div>
+      <div class="field"><label for="hMan">Manual price</label><input id="hMan" type="number" step="any" inputmode="decimal" placeholder="Leave blank for live" value="${h && h.manualPrice ? h.manualPrice : ''}"></div>
+    </div>
+    <div class="field"><label for="hName">Name</label><input id="hName" type="text" value="${esc(h ? h.name || '' : '')}"></div>
+    <p class="note">A manual price overrides the live quote. Use it for funds the quote service doesn't carry.</p>
+    <div class="dlg-actions">${h ? `<button class="btn danger left" data-act="delHolding" data-id="${h.id}">Remove</button>` : ''}<button class="btn" data-act="closeDlg">Cancel</button><button class="btn primary" data-act="saveHolding" data-id="${h ? h.id : ''}">Save</button></div>`;
+  openDlg();
+}
+async function saveHolding(id) {
+  const sym = $('#hSym').value.trim().toUpperCase().replace(/\//g, '.');
+  const qty = num($('#hQty').value);
+  if (!sym || qty == null) { toast('Symbol and shares are required.'); return; }
+  const cost = num($('#hCost').value), man = num($('#hMan').value), name = $('#hName').value.trim(), accountId = $('#hAcc').value;
+  if (id) Object.assign(S.holdings.find(x => x.id === id), {qty, cost, manualPrice: man > 0 ? man : null, name, accountId});
+  else S.holdings.push({id: uid(), accountId, symbol: sym, name, qty, cost, csvPrice: null, csvValue: 0, manualPrice: man > 0 ? man : null});
+  const a = S.accounts.find(x => x.id === accountId); if (a.type === 'manual') a.type = 'brokerage';
+  await save(); await snap(); closeDlg(); render();
+  if (!id && !(man > 0)) refresh(false);
+}
+
+function accountDlg(id) {
+  const a = id ? S.accounts.find(x => x.id === id) : null;
+  const type = a ? a.type : 'brokerage';
+  $('#dlgBody').innerHTML = `
+    <h3>${a ? 'Edit account' : 'Add account'}</h3>
+    <div class="field"><label for="aName">Name</label><input id="aName" type="text" value="${esc(a ? a.name : '')}" placeholder="e.g. MACS 529 – Emma"></div>
+    <div class="field"><label for="aType">Tracking</label><select id="aType">
+      <option value="brokerage" ${type === 'brokerage' ? 'selected' : ''}>Holdings (CSV import, live prices)</option>
+      <option value="manual" ${type === 'manual' ? 'selected' : ''}>Balance only (you enter it)</option></select></div>
+    <div class="field"><label for="aTags">Categories for a balance-only account</label><input id="aTags" type="text" value="${esc(a && a.tags ? a.tags.join(', ') : '')}" placeholder="e.g. College, Retirement"></div>
+    <div class="dlg-actions">${a ? `<button class="btn danger left" data-act="delAccount" data-id="${a.id}">Delete</button>` : ''}<button class="btn" data-act="closeDlg">Cancel</button><button class="btn primary" data-act="saveAccount" data-id="${a ? a.id : ''}">Save</button></div>`;
+  openDlg();
+}
+async function saveAccount(id) {
+  const name = $('#aName').value.trim(); if (!name) { toast('Give the account a name.'); return; }
+  const type = $('#aType').value, tags = splitTags($('#aTags').value);
+  if (id) Object.assign(S.accounts.find(x => x.id === id), {name, type, tags});
+  else S.accounts.push({id: uid(), name, type, tags});
+  await save(); await snap(); closeDlg(); render();
+}
+async function delAccount(id) {
+  const a = S.accounts.find(x => x.id === id);
+  if (!confirm(`Delete ${a.name} and everything in it?`)) return;
+  S.accounts = S.accounts.filter(x => x.id !== id);
+  S.holdings = S.holdings.filter(h => h.accountId !== id);
+  delete S.balances[id];
+  await save(); await snap(); closeDlg(); render();
+}
+
+function balanceDlg(id) {
+  const a = S.accounts.find(x => x.id === id), list = (S.balances[id] || []).slice().reverse();
+  $('#dlgBody').innerHTML = `
+    <h3>Update ${esc(a.name)}</h3>
+    <div class="grid2">
+      <div class="field"><label for="bVal">Balance</label><input id="bVal" type="number" step="any" inputmode="decimal" placeholder="From your statement"></div>
+      <div class="field"><label for="bDate">As of</label><input id="bDate" type="date" value="${today()}"></div>
+    </div>
+    ${list.length ? `<div class="lbl dim" style="font-size:13px;margin-bottom:6px">History</div><div class="hist">${list.map(b => `<div><span>${fdate(b.d, true)}</span><span>${money2(b.v)}</span><button data-act="delBal" data-id="${id}" data-d="${b.d}">Remove</button></div>`).join('')}</div>` : ''}
+    <div class="dlg-actions"><button class="btn" data-act="closeDlg">Cancel</button><button class="btn primary" data-act="saveBal" data-id="${id}">Save balance</button></div>`;
+  openDlg(); setTimeout(() => $('#bVal').focus(), 50);
+}
+async function saveBal(id) {
+  const v = num($('#bVal').value), d = $('#bDate').value || today();
+  if (v == null) { toast('Enter the balance.'); return; }
+  const list = (S.balances[id] || []).filter(b => b.d !== d); list.push({d, v}); list.sort((a, b) => a.d < b.d ? -1 : 1);
+  S.balances[id] = list;
+  // keep past snapshots honest when backfilling an older statement
+  SNAP.forEach(s => { if (s.d >= d && s.acc[id] != null) { const L = list.filter(b => b.d <= s.d).pop(); if (L) { s.total += L.v - s.acc[id]; s.acc[id] = L.v; } } });
+  await save(); await snap(); closeDlg(); render(); toast('Balance saved.');
+}
+
+/* ---------- chart ---------- */
+let CH = null;
+function rangeCut(r) { const days = {'1M': 31, '3M': 92, '6M': 183, '1Y': 366}[r]; if (!days) return ''; const d = new Date(); d.setDate(d.getDate() - days); return ymd(d); }
+function seriesData(key) {
+  const cut = rangeCut(U.range);
+  return SNAP.filter(s => s.d >= cut).map(s => ({d: s.d, v: key === 'total' ? s.total : key.startsWith('a:') ? s.acc[key.slice(2)] : s.tags[key.slice(2)]})).filter(p => p.v != null);
+}
+function chartBlock(key, withPicker) {
+  const series = seriesData(key);
+  const c = withPicker ? calc() : null;
+  const picker = withPicker ? `<select data-chg="series" aria-label="Chart series"><option value="total">All accounts</option>
+    <optgroup label="Accounts">${S.accounts.map(a => `<option value="a:${a.id}" ${key === 'a:' + a.id ? 'selected' : ''}>${esc(a.name)}</option>`).join('')}</optgroup>
+    <optgroup label="Categories">${Object.keys(c.tags).sort().map(t => `<option value="t:${esc(t)}" ${key === 't:' + t ? 'selected' : ''}>${esc(t)}</option>`).join('')}</optgroup></select>` : '';
+  const ranges = ['1M', '3M', '6M', '1Y', 'All'].map(r => `<button data-act="range" data-r="${r}" aria-pressed="${U.range === r}">${r}</button>`).join('');
+  let body;
+  if (series.length < 2) {
+    body = `<div class="chart-empty">${SNAP.length ? 'The line starts once there are two days on record. The app saves one point per day you open it, so this fills in on its own.' : 'Import your holdings and the first point gets saved today.'}</div>`;
+    CH = null;
+  } else {
+    const W = 1000, H = 300; const vs = series.map(p => p.v);
+    let lo = Math.min(...vs), hi = Math.max(...vs); if (hi === lo) { hi += 1; lo -= 1; }
+    const pad = (hi - lo) * .1; lo -= pad; hi += pad;
+    const t0 = +new Date(series[0].d), t1 = +new Date(series[series.length - 1].d);
+    const pts = series.map(p => [((+new Date(p.d) - t0) / ((t1 - t0) || 1)) * W, H - (p.v - lo) / (hi - lo) * H]);
+    const line = 'M' + pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join('L');
+    const neg = series[series.length - 1].v < series[0].v;
+    const yr = (t1 - t0) > 300 * 86400000;
+    CH = {series, pts, W, H, yr};
+    body = `<div class="chart-read" id="chartRead"></div>
+      <div class="plot" id="plot"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
+        <defs><linearGradient id="cg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" style="stop-color:var(--c);stop-opacity:.25"/><stop offset="1" style="stop-color:var(--c);stop-opacity:0"/></linearGradient></defs>
+        <path d="${line}L${W},${H}L0,${H}Z" style="fill:url(#cg)"/>
+        <path d="${line}" style="fill:none;stroke:var(--c);stroke-width:2" vector-effect="non-scaling-stroke"/></svg>
+        <div class="cursor" id="ccur"></div><div class="dot" id="cdot"></div>
+        <span class="ylab top">${money(hi)}</span><span class="ylab bot">${money(lo)}</span></div>
+      <div class="xlab"><span>${fdate(series[0].d, yr)}</span><span>${fdate(series[series.length - 1].d, yr)}</span></div>`;
+    body = `<div class="chart ${neg ? 'neg' : ''}">${body}</div>`;
+  }
+  return `<div class="chart-ctl"><div class="seg">${ranges}</div>${picker}</div>${body}`;
+}
+function readDefault() {
+  if (!CH) return; const s = CH.series, a = s[0].v, b = s[s.length - 1].v, d = b - a;
+  $('#chartRead').innerHTML = `<span class="${cls(d)}">${signed(d)} (${pct(a ? d / a * 100 : 0)})</span> <span class="dim">over ${U.range === 'All' ? 'all time' : U.range}</span>`;
+}
+function bindChart() {
+  const plot = $('#plot'); if (!plot || !CH) return;
+  readDefault();
+  const cur = $('#ccur'), dot = $('#cdot');
+  const move = e => {
+    const r = plot.getBoundingClientRect(); const fx = Math.min(Math.max((e.clientX - r.left) / r.width, 0), 1) * CH.W;
+    let i = 0, best = Infinity; CH.pts.forEach((p, j) => { const dd = Math.abs(p[0] - fx); if (dd < best) { best = dd; i = j; } });
+    const p = CH.pts[i], s = CH.series[i], d = s.v - CH.series[0].v;
+    cur.style.left = (p[0] / CH.W * 100) + '%'; cur.style.opacity = .6;
+    dot.style.left = (p[0] / CH.W * 100) + '%'; dot.style.top = (p[1] / CH.H * 100) + '%'; dot.style.opacity = 1;
+    $('#chartRead').innerHTML = `${fdate(s.d, true)} <b>${money(s.v)}</b> <span class="${cls(d)}">${signed(d)}</span>`;
+  };
+  plot.addEventListener('pointermove', move);
+  plot.addEventListener('pointerdown', move);
+  plot.addEventListener('pointerleave', () => { cur.style.opacity = 0; dot.style.opacity = 0; readDefault(); });
+}
+
+/* ---------- views ---------- */
+function renderStatus() {
+  const el = $('#status');
+  if (refreshing) { el.innerHTML = `<span class="spin"></span>${esc(refreshMsg)}`; return; }
+  if (!S.holdings.length) { el.textContent = ''; return; }
+  el.innerHTML = S.settings.key ? `Prices ${ago(S.pricesAt)}` : '<span class="warn">No live prices</span>';
+}
+function render() {
+  document.querySelectorAll('#tabs button').forEach(b => b.setAttribute('aria-current', b.dataset.tab === U.tab ? 'page' : 'false'));
+  renderStatus();
+  const v = {overview: vOverview, holdings: vHoldings, categories: vCategories, accounts: vAccounts, settings: vSettings}[U.tab]();
+  $('#view').innerHTML = v;
+  bindChart();
+}
+function heroNumber(n) {
+  const s = money2(n); const i = s.lastIndexOf('.');
+  return i > 0 ? `${s.slice(0, i)}<span class="cents">${s.slice(i)}</span>` : s;
+}
+function vOverview() {
+  const c = calc(), t = c.tot;
+  if (!S.holdings.length && !Object.keys(S.balances).length) {
+    return `<div class="empty"><h3>Start with your holdings</h3>
+      <p>Export positions from your old Google Sheet or a brokerage as CSV, then import it here. Balance-only accounts like the 529 and the SIMPLE IRA get updated from the Accounts tab.</p>
+      <button class="btn primary" data-act="import">Import CSV</button><br>
+      <button class="btn" data-act="tab" data-tab="accounts">Go to accounts</button></div>`;
+  }
+  const flags = [];
+  if (t.missing) flags.push(`<button class="flag" data-act="needPrice">${t.missing} holding${t.missing > 1 ? 's' : ''} need a price</button>`);
+  if (!S.settings.key && S.holdings.length) flags.push(`<button class="flag" data-act="tab" data-tab="settings">Add a quote key for live prices</button>`);
+  S.accounts.filter(a => a.type === 'manual').forEach(a => {
+    const L = latestBal(a.id);
+    if (!L) flags.push(`<button class="flag" data-act="bal" data-id="${a.id}">Enter a balance for ${esc(a.name)}</button>`);
+    else if (daysSince(L.d) > 45) flags.push(`<button class="flag" data-act="bal" data-id="${a.id}">${esc(a.name)} last updated ${fdate(L.d)}</button>`);
+  });
+  const dayPct = t.dayBase > 0 ? t.day / t.dayBase * 100 : null;
+  const gainPct = t.gcost > 0 ? t.gain / t.gcost * 100 : null;
+  const accts = S.accounts.map(a => ({a, v: c.acc[a.id].value})).sort((x, y) => y.v - x.v);
+  return `
+    <section class="hero">
+      <div class="lbl">Everything, all accounts</div>
+      <div class="big">${heroNumber(t.value)}</div>
+      <div class="lines">
+        ${dayPct != null ? `<span>Today <b class="${cls(t.day)}">${signed(t.day)} (${pct(dayPct)})</b></span>` : ''}
+        <span>Total gain <b class="${cls(t.gain)}">${signed(t.gain)} ${gainPct != null ? '(' + pct(gainPct) + ')' : ''}</b></span>
+      </div>
+    </section>
+    ${flags.length ? `<div class="flags">${flags.join('')}</div>` : ''}
+    <section class="card"><h2>Growth</h2>${chartBlock(U.series, true)}</section>
+    <section class="card"><h2>By account <button class="btn sm r" data-act="refresh">Refresh prices</button></h2>
+      ${accts.map(({a, v}) => { const A = c.acc[a.id]; const sub = a.type === 'manual'
+        ? (A.asOf ? `Balance as of ${fdate(A.asOf)}` : 'No balance yet')
+        : `${A.n} holding${A.n === 1 ? '' : 's'}${A.day ? ` · today <span class="${cls(A.day)}">${signed(A.day)}</span>` : ''}`;
+        return `<button class="row" data-act="${a.type === 'manual' ? 'bal' : 'openAcct'}" data-id="${a.id}">
+          <span class="t">${esc(a.name)}${a.type === 'manual' ? ' <span class="badge amber">balance</span>' : ''}</span><span class="v">${money(v)}</span>
+          <span class="s">${sub}</span><span class="s2 dim">${share(t.value ? v / t.value * 100 : 0)}</span>
+          <span class="bar ${a.type === 'manual' ? 'amber' : ''}"><i style="width:${t.value ? v / t.value * 100 : 0}%"></i></span></button>`; }).join('')}
+    </section>`;
+}
+function srcBadge(src) {
+  return src === 'import' ? '<span class="badge amber">import price</span>' : src === 'manual' ? '<span class="badge">manual</span>' : src === 'none' ? '<span class="badge amber">no price</span>' : '';
+}
+function sortFn() {
+  return {value: (a, b) => b.value - a.value,
+    gain: (a, b) => ((b.hasGain ? b.gain / b.cost : -1e9) - (a.hasGain ? a.gain / a.cost : -1e9)),
+    day: (a, b) => ((b.dayBase ? b.day / b.dayBase : -1e9) - (a.dayBase ? a.day / a.dayBase : -1e9)),
+    az: (a, b) => a.symbol.localeCompare(b.symbol)}[U.sort];
+}
+function vHoldings() {
+  const c = calc();
+  if (!S.holdings.length) return `<div class="empty"><h3>No holdings yet</h3><p>Import a positions CSV, or add holdings by hand for accounts that don't export one, like Robinhood.</p><button class="btn primary" data-act="import">Import CSV</button> <button class="btn" data-act="addHolding">Add by hand</button></div>`;
+  const q = U.q.trim().toUpperCase();
+  const match = g => (!q || g.symbol.includes(q) || (g.name || '').toUpperCase().includes(q) || tagsFor(g.symbol).some(t => t.toUpperCase().includes(q))) && (!U.needPrice || g.missing || g.srcs.has('import'));
+  const allTags = [...new Set(Object.values(S.tags).flat())].sort();
+  const toolbar = `<div class="toolbar">
+      <div class="seg"><button data-act="hview" data-v="combined" aria-pressed="${U.hview === 'combined'}">Combined</button><button data-act="hview" data-v="accounts" aria-pressed="${U.hview === 'accounts'}">By account</button></div>
+      <select data-chg="sort" aria-label="Sort"><option value="value" ${U.sort === 'value' ? 'selected' : ''}>Largest</option><option value="gain" ${U.sort === 'gain' ? 'selected' : ''}>Total gain %</option><option value="day" ${U.sort === 'day' ? 'selected' : ''}>Today %</option><option value="az" ${U.sort === 'az' ? 'selected' : ''}>A–Z</option></select>
+      <input type="search" placeholder="Search ticker, name, tag" value="${esc(U.q)}" data-chg="q" aria-label="Search">
+      <button class="btn sm" data-act="addHolding">Add</button>
+    </div>
+    ${U.needPrice ? `<div class="flags"><button class="flag" data-act="needPrice">Showing holdings without a live price. Tap to show all.</button></div>` : ''}`;
+  const line = g => {
+    const gp = g.hasGain && g.cost ? g.gain / g.cost * 100 : null, dp = g.dayBase ? g.day / g.dayBase * 100 : null;
+    const src = g.missing ? 'none' : g.srcs.has('import') ? 'import' : g.srcs.has('manual') ? 'manual' : '';
+    const open = U.open[g.symbol];
+    const tagChips = tagsFor(g.symbol).map(t => `<span class="chip">${esc(t)}</span>`).join('');
+    return `<div class="row" style="padding-bottom:${open ? 12 : 11}px">
+      <button data-act="toggle" data-s="${esc(g.symbol)}" aria-expanded="${!!open}" style="all:unset;cursor:pointer;display:contents">
+        <span class="t">${esc(g.symbol)} <span class="nm">${esc(g.name || '')}</span></span>
+        <span class="v">${g.missing ? '—' : money(g.value)}</span>
+        <span class="s">${qtyFmt(g.qty)} sh${g.rows.length > 1 ? ` · ${g.rows.length} accounts` : ''} ${srcBadge(src)}</span>
+        <span class="s2"><span class="${cls(gp)}">${gp != null ? pct(gp) : ''}</span>${dp != null ? ` <span class="dim">·</span> <span class="${cls(dp)}">${pct(dp)} today</span>` : ''}</span>
+      </button>
+      ${!open && tagChips ? `<div class="chips" style="grid-column:1/-1;margin-top:6px">${tagChips}</div>` : ''}
+      ${open ? detail(g, allTags) : ''}
+    </div>`;
+  };
+  let body;
+  if (U.hview === 'combined') {
+    const list = consolidate(c.rows).filter(match).sort(sortFn());
+    body = `<section class="card">${list.map(line).join('') || '<div class="empty">Nothing matches.</div>'}</section>`;
+  } else {
+    body = S.accounts.filter(a => a.type === 'brokerage').map(a => {
+      const list = consolidate(c.rows.filter(r => r.accountId === a.id)).filter(match).sort(sortFn());
+      if (!list.length && (q || U.needPrice)) return '';
+      return `<section class="card"><h2>${esc(a.name)}<span class="r num">${money(c.acc[a.id].value)}</span></h2>${list.map(line).join('') || '<p class="note">Empty. Import a CSV or add holdings in Accounts.</p>'}</section>`;
+    }).join('');
+  }
+  return toolbar + body;
+}
+function detail(g, allTags) {
+  const mine = tagsFor(g.symbol);
+  const subs = g.rows.map(r => {
+    const a = S.accounts.find(x => x.id === r.accountId);
+    const gp = r.gain != null && r.cost ? r.gain / r.cost * 100 : null;
+    return `<button class="sub" data-act="editHolding" data-id="${r.id}" style="all:unset;cursor:pointer;display:grid;grid-template-columns:1fr auto;gap:0 10px;padding:8px 0;border-top:1px solid var(--line);font-size:13px">
+      <span>${esc(a ? a.name : '?')}</span><span class="num">${r.value != null ? money(r.value) : '—'}</span>
+      <span class="s" style="grid-column:1/-1">${qtyFmt(r.qty)} sh @ ${r.price != null ? money2(r.price) : '—'}${r.cost ? ` · avg cost ${money2(r.cost / r.qty)}` : ''}${gp != null ? ` · <span class="${cls(gp)}">${signed(r.gain)} (${pct(gp)})</span>` : ''} ${srcBadge(r.src)}</span></button>`;
+  }).join('');
+  const blended = g.hasGain && g.qty ? `<p class="note" style="margin:0 0 4px">Blended cost ${money2(g.cost / g.qty)}/sh across ${g.rows.length} account${g.rows.length > 1 ? 's' : ''} · total gain <span class="${cls(g.gain)}">${signed(g.gain)}</span></p>` : '';
+  return `<div class="detail">${blended}${subs}
+    <div class="tagrow"><div class="lbl">Categories — tap to toggle</div>
+      <div class="chips">${[...new Set([...allTags, ...mine])].map(t => `<button class="chip" data-act="tagToggle" data-s="${esc(g.symbol)}" data-t="${esc(t)}" aria-pressed="${mine.includes(t)}">${esc(t)}</button>`).join('') || '<span class="dim" style="font-size:13px">No categories yet</span>'}</div>
+      <div class="addtag"><input type="text" id="nt_${esc(g.symbol)}" placeholder="New category, e.g. Chips, AI, Index" aria-label="New category"><button class="btn sm" data-act="tagAdd" data-s="${esc(g.symbol)}">Add</button></div>
+    </div></div>`;
+}
+function vCategories() {
+  const c = calc(), t = c.tot;
+  const list = Object.entries(c.tags).sort((a, b) => b[1].value - a[1].value);
+  if (!list.length) return `<div class="empty"><h3>No categories yet</h3><p>Open any holding and tag it. Tags stick to the ticker across every account and every future import.</p><button class="btn primary" data-act="tab" data-tab="holdings">Go to holdings</button></div>`;
+  const sel = U.tag && c.tags[U.tag] ? U.tag : null;
+  const sumPct = list.reduce((s, [, o]) => s + (t.value ? o.value / t.value * 100 : 0), 0);
+  return `
+    <section class="card"><h2>${sel ? esc(sel) : 'Pick a category'}${sel && sel !== 'Untagged' ? `<span class="r"><button class="btn sm" data-act="tagRename" data-t="${esc(sel)}">Rename</button> <button class="btn sm danger" data-act="tagDelete" data-t="${esc(sel)}">Remove</button></span>` : ''}</h2>
+      ${sel ? chartBlock('t:' + sel, false) : '<p class="note" style="margin:0">Tap a category below to see how it has moved over time.</p>'}
+      ${sel ? `<p class="note">${[...c.tags[sel].syms].sort().map(esc).join(', ')}${c.tags[sel].accts.size ? (c.tags[sel].syms.size ? ', ' : '') + [...c.tags[sel].accts].map(esc).join(', ') : ''}</p>` : ''}
+    </section>
+    <section class="card"><h2>Categories<span class="r dim" style="font-size:13px">share of total</span></h2>
+      ${list.map(([name, o]) => { const sh = t.value ? o.value / t.value * 100 : 0; const gp = o.gcost ? o.gain / o.gcost * 100 : null; const dp = o.dayBase ? o.day / o.dayBase * 100 : null;
+        return `<button class="row" data-act="pickTag" data-t="${esc(name)}" aria-pressed="${sel === name}" style="${sel === name ? 'background:rgba(79,216,196,.05)' : ''}">
+          <span class="t">${esc(name)}</span><span class="v">${money(o.value)}</span>
+          <span class="s">${gp != null ? `<span class="${cls(gp)}">${pct(gp)}</span> total` : ''}${dp != null ? ` · <span class="${cls(dp)}">${pct(dp)}</span> today` : ''}</span><span class="s2">${share(sh)}</span>
+          <span class="bar ${name === 'Untagged' ? 'amber' : ''}"><i style="width:${Math.min(sh, 100)}%"></i></span></button>`; }).join('')}
+      ${sumPct > 100.5 ? `<p class="note">Shares add up past 100% because some holdings carry more than one category.</p>` : ''}
+    </section>`;
+}
+function vAccounts() {
+  const c = calc();
+  return `
+    <div class="toolbar"><button class="btn primary" data-act="import">Import CSV</button><button class="btn" data-act="addAccount">Add account</button><button class="btn" data-act="addHolding">Add holding</button></div>
+    <p class="note" style="margin:-4px 0 14px">For the Google Sheet: export it as CSV with an Account column and choose "Use the Account column" when importing. Robinhood doesn't export positions, so add those by hand or keep them in the sheet export.</p>
+    ${S.accounts.map(a => { const A = c.acc[a.id];
+      const meta = a.type === 'manual'
+        ? (A.asOf ? `Balance as of ${fdate(A.asOf, true)}${A.since != null ? ` · <span class="${cls(A.since)}">${signed(A.since)}</span> since last` : ''}` : 'No balance entered yet')
+        : `${A.n} holding${A.n === 1 ? '' : 's'} · ${a.importedAt ? 'imported ' + ago(a.importedAt) : 'never imported'}${A.missing ? ` · <span class="warn">${A.missing} without a price</span>` : ''}`;
+      return `<section class="card" id="acct_${a.id}">
+        <div class="acct-head"><h2 style="margin:0">${esc(a.name)}</h2><span class="v">${money(A.value)}</span></div>
+        <p class="note">${meta}${a.type === 'manual' && a.tags && a.tags.length ? ' · ' + a.tags.map(esc).join(', ') : ''}</p>
+        <div class="acct-actions">
+          ${a.type === 'manual' ? `<button class="btn sm primary" data-act="bal" data-id="${a.id}">Update balance</button>` : `<button class="btn sm primary" data-act="import" data-id="${a.id}">Import CSV</button><button class="btn sm" data-act="addHolding" data-id="${a.id}">Add holding</button>`}
+          <button class="btn sm" data-act="editAccount" data-id="${a.id}">Edit</button>
+        </div></section>`; }).join('')}`;
+}
+function vSettings() {
+  return `
+    <section class="card"><h2>Live prices</h2>
+      <div class="field"><label for="apiKey">Finnhub API key</label><input id="apiKey" type="password" autocomplete="off" value="${esc(S.settings.key)}" data-chg="key" placeholder="Paste your free key"></div>
+      <p class="note">Free at <a href="https://finnhub.io/register" target="_blank" rel="noopener" style="color:var(--teal)">finnhub.io</a>. Stocks and ETFs price live; most mutual funds won't, so those fall back to the price from your last import, or a manual price you set on the holding. The key stays on this phone.</p>
+      <div class="field" style="margin-top:12px"><label for="maxAge">Auto-refresh when opened if prices are older than</label>
+        <select id="maxAge" data-chg="maxAge">${[[5, '5 minutes'], [15, '15 minutes'], [60, '1 hour'], [240, '4 hours'], [0, 'Never, manual only']].map(([v, l]) => `<option value="${v}" ${+S.settings.maxAge === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+      <button class="btn" data-act="refresh">Refresh prices now</button>
+    </section>
+    <section class="card"><h2>Backup</h2>
+      <p class="note" style="margin:0 0 10px">Everything lives on this device only. Export a backup now and then, especially before clearing browser data.</p>
+      <div class="acct-actions"><button class="btn" data-act="export">Export backup</button><button class="btn" data-act="restore">Restore backup</button></div>
+      <p class="note">${SNAP.length} day${SNAP.length === 1 ? '' : 's'} of history saved${SNAP.length ? ', since ' + fdate(SNAP[0].d, true) : ''}.</p>
+    </section>
+    <section class="card"><h2>Reset</h2>
+      <div class="acct-actions"><button class="btn danger" data-act="reset">Erase everything</button></div>
+    </section>`;
+}
+
+/* ---------- actions ---------- */
+const ACT = {
+  tab: el => { U.tab = el.dataset.tab; U.open = {}; render(); scrollTo(0, 0); },
+  closeDlg, doImport,
+  import: el => startImport(el.dataset.id),
+  refresh: () => refresh(true),
+  range: el => { U.range = el.dataset.r; render(); },
+  hview: el => { U.hview = el.dataset.v; render(); },
+  toggle: el => { const s = el.dataset.s; U.open[s] = !U.open[s]; render(); },
+  needPrice: () => { U.needPrice = !U.needPrice; U.tab = 'holdings'; render(); },
+  openAcct: () => { U.tab = 'holdings'; U.hview = 'accounts'; render(); },
+  editHolding: el => holdingDlg(el.dataset.id),
+  addHolding: el => holdingDlg(null, el.dataset.id),
+  saveHolding: el => saveHolding(el.dataset.id),
+  delHolding: async el => { if (!confirm('Remove this holding?')) return; S.holdings = S.holdings.filter(h => h.id !== el.dataset.id); await save(); await snap(); closeDlg(); render(); },
+  addAccount: () => accountDlg(null), editAccount: el => accountDlg(el.dataset.id),
+  saveAccount: el => saveAccount(el.dataset.id), delAccount: el => delAccount(el.dataset.id),
+  bal: el => balanceDlg(el.dataset.id), saveBal: el => saveBal(el.dataset.id),
+  delBal: async el => { const id = el.dataset.id; S.balances[id] = (S.balances[id] || []).filter(b => b.d !== el.dataset.d); await save(); await snap(); balanceDlg(id); render(); },
+  tagToggle: async el => { const s = el.dataset.s, t = el.dataset.t; const cur = tagsFor(s).slice(); const i = cur.indexOf(t); i >= 0 ? cur.splice(i, 1) : cur.push(t); S.tags[s] = cur; await save(); await snap(); render(); },
+  tagAdd: async el => { const s = el.dataset.s; const inp = document.getElementById('nt_' + s); const t = splitTags(inp.value); if (!t.length) return; S.tags[s] = [...new Set([...tagsFor(s), ...t])]; await save(); await snap(); render(); },
+  pickTag: el => { U.tag = U.tag === el.dataset.t ? null : el.dataset.t; render(); },
+  tagRename: async el => { const old = el.dataset.t; const nw = (prompt('Rename category', old) || '').trim(); if (!nw || nw === old) return;
+    for (const s in S.tags) S.tags[s] = [...new Set(S.tags[s].map(x => x === old ? nw : x))];
+    S.accounts.forEach(a => { if (a.tags) a.tags = [...new Set(a.tags.map(x => x === old ? nw : x))]; });
+    SNAP.forEach(s => { if (s.tags[old] != null) { s.tags[nw] = (s.tags[nw] || 0) + s.tags[old]; delete s.tags[old]; } });
+    U.tag = nw; await save(); await idb.set('snaps', SNAP); render(); },
+  tagDelete: async el => { const t = el.dataset.t; if (!confirm(`Remove the ${t} category from every holding?`)) return;
+    for (const s in S.tags) S.tags[s] = S.tags[s].filter(x => x !== t);
+    S.accounts.forEach(a => { if (a.tags) a.tags = a.tags.filter(x => x !== t); });
+    U.tag = null; await save(); await snap(); render(); },
+  export: () => { const blob = new Blob([JSON.stringify({app: 'portfolio', v: 1, exported: new Date().toISOString(), state: S, snaps: SNAP}, null, 1)], {type: 'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `portfolio-backup-${today()}.json`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); },
+  restore: () => { const f = $('#restoreFile'); f.value = ''; f.click(); },
+  reset: async () => { if (!confirm('Erase all accounts, holdings, tags and history on this device?')) return; S = DEFAULT_STATE(); P = {}; SNAP = []; await save(); await idb.set('prices', P); await idb.set('snaps', SNAP); U.tab = 'overview'; render(); toast('Erased.'); }
+};
+document.addEventListener('click', e => { const el = e.target.closest('[data-act]'); if (!el) return; const f = ACT[el.dataset.act]; if (f) { e.preventDefault(); f(el, e); } });
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id && e.target.id.startsWith('nt_')) { const b = e.target.parentElement.querySelector('[data-act="tagAdd"]'); b && b.click(); } });
+const CHG = {
+  series: el => { U.series = el.value; render(); },
+  sort: el => { U.sort = el.value; render(); },
+  q: el => { U.q = el.value; const pos = el.selectionStart; render(); const n = document.querySelector('[data-chg="q"]'); if (n) { n.focus(); n.setSelectionRange(pos, pos); } },
+  key: async el => { S.settings.key = el.value.trim(); await save(); if (S.settings.key) refresh(true); else renderStatus(); },
+  maxAge: async el => { S.settings.maxAge = +el.value; await save(); },
+  impTarget: el => { IMP.target = el.value; renderImport(); },
+  impMap: el => { IMP.m[el.dataset.k] = +el.value; renderImport(); },
+  impPer: el => { IMP.perShare = el.checked; renderImport(); }
+};
+document.addEventListener('change', e => { const el = e.target.closest('[data-chg]'); if (el && CHG[el.dataset.chg] && el.dataset.chg !== 'q') CHG[el.dataset.chg](el); });
+let qT; document.addEventListener('input', e => { if (e.target.dataset && e.target.dataset.chg === 'q') { clearTimeout(qT); const el = e.target; qT = setTimeout(() => CHG.q(el), 250); } });
+$('#restoreFile').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try { const j = JSON.parse(await f.text()); if (!j.state || !j.state.accounts) throw new Error('not a Portfolio backup');
+    if (!confirm('Replace everything on this device with that backup?')) return;
+    S = Object.assign(DEFAULT_STATE(), j.state); SNAP = j.snaps || []; await save(); await idb.set('snaps', SNAP); render(); toast('Backup restored.'); refresh(false);
+  } catch (err) { toast('Could not restore: ' + err.message); }
+});
+
+/* ---------- boot ---------- */
+(async function boot() {
+  try { await idb.open(); } catch (e) { toast('Storage unavailable. Changes will not be saved.', 5000); }
+  try {
+    const st = await idb.get('state');
+    if (st && st.accounts) S = Object.assign(DEFAULT_STATE(), st, {settings: Object.assign({key: '', maxAge: 15}, st.settings)});
+    else await save();
+    P = (await idb.get('prices')) || {}; SNAP = (await idb.get('snaps')) || [];
+  } catch (e) {}
+  render();
+  const age = +S.settings.maxAge;
+  if (S.settings.key && age > 0 && Date.now() - S.pricesAt > age * 60000) refresh(false);
+  else snap();
+  setInterval(renderStatus, 60000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && S.settings.key && age > 0 && Date.now() - S.pricesAt > age * 60000) refresh(false); });
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+})();
+</script>
+</body>
+</html>
